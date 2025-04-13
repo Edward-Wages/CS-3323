@@ -13,11 +13,11 @@ class Student:
     def __init__(self, firstName, lastName, grade, ID, eagerness):
         self.firstName = firstName
         self.lastName = lastName
-        self.grade = grade
+        self.grade = int(grade)
         self.ID = ID
         self.eagerness = eagerness
         self.letterGrade = "Unassigned"
-    
+
     def __repr__(self):
         return f"{self.firstName} {self.lastName} {self.grade} {self.ID} {self.eagerness}"
     #All this method does is print out each student class for the sake of ensuring the records are stored correctly
@@ -28,31 +28,33 @@ class Student:
     def _printGrades_(self):
         return f"{self.letterGrade}"
 
+    def sort_students_final(student_list):
+        return sorted(student_list, key=lambda x: (x.lastName, x.firstName, x.ID))
+
     @classmethod
     def assign_letter_grades(cls, student_list):
-        """Assign letter grades according to the specified rules"""
-        if not student_list:
-            return
+        if len(student_list) < 7:
+            raise ValueError("Class must have at least 7 students")
             
-        # Sort by grade (descending) and eagerness (E before L)
-        sorted_students = sorted(student_list,
-                               key=lambda s: (-int(s.grade), s.eagerness))
+        # Sort by grade (descending) and eagerness (E comes first)
+        sorted_students = sorted(student_list, 
+                               key=lambda x: (-x.grade, 0 if x.eagerness == 'E' else 1))
         
         n = len(sorted_students)
         a_cutoff = n // 3
         b_cutoff = 2 * (n // 3)
-        f_cutoff = n - (n // 10)  # Bottom n/10
+        f_cutoff = n - ((n + 9) // 10)  # Proper ceiling for n/10
         
-        for i, student in enumerate(sorted_students, start=1):
-            if i <= a_cutoff:
+        # Assign grades
+        for i, student in enumerate(sorted_students):
+            if i < a_cutoff:
                 student.letterGrade = "A"
-            elif i <= b_cutoff:
+            elif i < b_cutoff:
                 student.letterGrade = "B"
-            elif i > f_cutoff:
+            elif i >= f_cutoff:
                 student.letterGrade = "F"
             else:
                 student.letterGrade = "C" if student.eagerness == "E" else "D"
-#Loop system needs reworking
 
 
 studentList = [] #Will be filled with Student objects once the records are created
@@ -119,18 +121,10 @@ for full_name in clean_matches:
 for i in range(len(idList)):
     studentList.append(Student(firstName=firstNames[i], lastName=lastNames[i], grade=gradeList[i], ID= idList[i], eagerness=eagernessList[i]))
 
-for student in studentList:
-    print(Student.__repr__(student))
-
+#Next we assign the letter grades of the students
 Student.assign_letter_grades(studentList)
 
-for student in studentList:
-    print(Student._printGrades_(student))
+Student.sort_students_final(studentList)
+#Sorts the student list as specified in the homework document (Last name, first name, ID)
 
-for student in studentList:
-    print(Student.__reprwithGrades__(student))
-
-#We know have every student record created and ready for the rest of the operations
-
-#Next, we need to make a method for determining letter grades. We can accomplish this by referring to the rules for the grading system & applying them
-#to the list of students which are sorted by grades in decending order.
+#Now we'll start writing our findings to the HTML file
